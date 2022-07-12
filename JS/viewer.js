@@ -35,6 +35,7 @@ import {
 } from "three";
 //Scene
 const scene = new Scene();
+const canvas = document.getElementById("viewer-container");
 //Objects
 const xSide = parseInt(id) + 1;
 const geometry = new BoxGeometry(xSide, 1, 1);
@@ -42,21 +43,20 @@ const material = new MeshBasicMaterial({ color: "white" });
 const box = new Mesh(geometry, material);
 scene.add(box);
 //Camera
-////////
-const sizes = {
-  width: 800,
-  height: 600,
-};
-////////////
-const camera = new PerspectiveCamera(75, sizes.width / sizes.height);
+const camera = new PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight);
 camera.position.z = 3;
 scene.add(camera);
 //Renderer
-const canvas = document.getElementById("viewer-container");
 const renderer = new WebGLRenderer({ canvas: canvas });
-renderer.setSize(sizes.width, sizes.height);
-renderer.render(scene, camera);
-//Animate
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+//Responsivity
+window.addEventListener('resize', ()=> {
+    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+});
+//Animation
 function animate() {
   box.rotation.x += 0.01;
   box.rotation.z += 0.01;
