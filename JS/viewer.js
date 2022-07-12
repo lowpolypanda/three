@@ -25,14 +25,42 @@ document.getElementById("title").innerText = title;
 //THREE
 //Three import
 import {
-  BoxGeometry,
-  Mesh,
-  MeshBasicMaterial,
-  MeshPhongMaterial,
-  PerspectiveCamera,
   Scene,
+  BoxGeometry,
+  MeshBasicMaterial,
+  Mesh,
+  PerspectiveCamera,
   WebGLRenderer,
+  MOUSE,
+  Vector2,
+  Vector3,
+  Vector4,
+  Quaternion,
+  Matrix4,
+  Spherical,
+  Box3,
+  Sphere,
+  Raycaster,
+  MathUtils,
+  Clock,
 } from "three";
+import CameraControls from "camera-controls";
+const subsetOfTHREE = {
+  MOUSE,
+  Vector2,
+  Vector3,
+  Vector4,
+  Quaternion,
+  Matrix4,
+  Spherical,
+  Box3,
+  Sphere,
+  Raycaster,
+  MathUtils: {
+    DEG2RAD: MathUtils.DEG2RAD,
+    clamp: MathUtils.clamp,
+  },
+};
 //Scene
 const scene = new Scene();
 const canvas = document.getElementById("viewer-container");
@@ -43,24 +71,33 @@ const material = new MeshBasicMaterial({ color: "white" });
 const box = new Mesh(geometry, material);
 scene.add(box);
 //Camera
-const camera = new PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight);
+const camera = new PerspectiveCamera(
+  75,
+  canvas.clientWidth / canvas.clientHeight
+);
 camera.position.z = 3;
 scene.add(camera);
+// Controls
+CameraControls.install({ THREE: subsetOfTHREE });
+const clock = new Clock();
+const cameraControls = new CameraControls(camera, canvas);
+cameraControls.dollyToCursor=true;
+//cameraControls.setOrbitPoint(0,0,0);
 //Renderer
 const renderer = new WebGLRenderer({ canvas: canvas });
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 //Responsivity
-window.addEventListener('resize', ()=> {
-    camera.aspect = canvas.clientWidth / canvas.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+window.addEventListener("resize", () => {
+  camera.aspect = canvas.clientWidth / canvas.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 });
 //Animation
 function animate() {
-  box.rotation.x += 0.01;
-  box.rotation.z += 0.01;
+  const delta = clock.getDelta();
+  cameraControls.update(delta);
   renderer.render(scene, camera);
-  window.requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 }
 animate();
