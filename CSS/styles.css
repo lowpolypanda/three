@@ -153,6 +153,11 @@ section {
   transition: width 0.5s ease;
   z-index: 1;
 }
+#menuText{
+  visibility: hidden;
+  opacity: 0;
+  transition: delay 300ms, visibility 0.5s ease, opacity 0.2s linear;
+}
 .viewer {
   background-color: var(--background);
 }

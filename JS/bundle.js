@@ -30978,12 +30978,15 @@ function open() {
   document.getElementById("sidebar").style.width = "15rem";
   document.getElementById("menuClose").style.display = "";
   document.getElementById("menuOpen").style.display = "none";
+  document.getElementById("menuText").style.visibility = "visible";
+  document.getElementById("menuText").style.opacity = "1";
 }
 function close() {
   console.log("tancar" + isOnDiv);
   document.getElementById("sidebar").style.width = "2.5rem";
   document.getElementById("menuClose").style.display = "none";
   document.getElementById("menuOpen").style.display = "";
+  document.getElementById("menuText").style.opacity = "0";
 }
 const urlParam = new URLSearchParams(window.location.search);
 const id = urlParam.get("id");
@@ -31011,7 +31014,7 @@ const canvas = document.getElementById("viewer-container");
 //Objects
 const xSide = parseInt(id) + 1;
 const geometry = new BoxGeometry(xSide, 1, 1);
-const material = new MeshLambertMaterial({ color: "white" });
+const material = new MeshLambertMaterial({ color: 0xaaaaaa });
 const box = new Mesh(geometry, material);
 scene.add(box);
 //Lights
