@@ -31479,7 +31479,7 @@ scene.add(grid);
 //Objects
 const xSide = parseInt(id) + 1;
 const geometry = new BoxGeometry(xSide, 1, 1);
-const material = new MeshLambertMaterial({ color: 0xffaa00 });
+const material = new MeshLambertMaterial({ color: 0x02be6e });
 const box = new Mesh(geometry, material);
 scene.add(box);
 //Lights
@@ -31511,7 +31511,7 @@ cameraControls.dollyToCursor = true;
 const renderer = new WebGLRenderer({ canvas: canvas });
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
-renderer.setClearColor(0xf0f0f0, 1);
+renderer.setClearColor(0xfafafa, 1);
 //Responsivity
 window.addEventListener("resize", () => {
   camera.aspect = canvas.clientWidth / canvas.clientHeight;
