@@ -28437,6 +28437,35 @@ class Light extends Object3D {
 
 }
 
+class HemisphereLight extends Light {
+
+	constructor( skyColor, groundColor, intensity ) {
+
+		super( skyColor, intensity );
+
+		this.isHemisphereLight = true;
+
+		this.type = 'HemisphereLight';
+
+		this.position.copy( Object3D.DefaultUp );
+		this.updateMatrix();
+
+		this.groundColor = new Color( groundColor );
+
+	}
+
+	copy( source, recursive ) {
+
+		super.copy( source, recursive );
+
+		this.groundColor.copy( source.groundColor );
+
+		return this;
+
+	}
+
+}
+
 const _projScreenMatrix$1 = /*@__PURE__*/ new Matrix4();
 const _lightPositionWorld$1 = /*@__PURE__*/ new Vector3();
 const _lookTarget$1 = /*@__PURE__*/ new Vector3();
@@ -31042,10 +31071,14 @@ const material = new MeshLambertMaterial({ color: 0xaaaaaa });
 const box = new Mesh(geometry, material);
 scene.add(box);
 //Lights
+const directionalLightMain = new DirectionalLight();
+directionalLightMain.position.set(3, 2, 1);
 const directionalLight = new DirectionalLight();
-directionalLight.position.set(3, 2, 1).normalize();
+directionalLight.position.set(0xffffff, 0.1);
+directionalLight.position.set(-3, -2, -1);
 const ambientLight = new AmbientLight(0xffffff, 0.2);
-scene.add(directionalLight, ambientLight);
+const hemisphereLight = new HemisphereLight (0xffffff, 0x000000, 0.2);
+scene.add(directionalLightMain, directionalLight, ambientLight, hemisphereLight);
 //Camera
 //const camera = new OrthographicCamera( canvas.clientWidth / - 2, canvas.clientWidth / 2, canvas.clientHeight / 2, canvas.clientHeight / - 2, 1, 1000 );
 const camera = new PerspectiveCamera(

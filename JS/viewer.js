@@ -29,9 +29,6 @@ function close() {
     value.style.opacity = "0";
   }
 }
-function hideText(text) {
-  text.style.colot = "pink";
-}
 //IMPORT PROJECTS INFO
 import { projectArray } from "./projects.js";
 const urlParam = new URLSearchParams(window.location.search);
@@ -62,6 +59,7 @@ import {
   Clock,
   DirectionalLight,
   AmbientLight,
+  HemisphereLight,
 } from "three";
 import CameraControls from "camera-controls";
 const subsetOfTHREE = {
@@ -90,10 +88,14 @@ const material = new MeshLambertMaterial({ color: 0xaaaaaa });
 const box = new Mesh(geometry, material);
 scene.add(box);
 //Lights
+const directionalLightMain = new DirectionalLight();
+directionalLightMain.position.set(3, 2, 1);
 const directionalLight = new DirectionalLight();
-directionalLight.position.set(3, 2, 1).normalize();
+directionalLight.position.set(0xffffff, 0.1)
+directionalLight.position.set(-3, -2, -1);
 const ambientLight = new AmbientLight(0xffffff, 0.2);
-scene.add(directionalLight, ambientLight);
+const hemisphereLight = new HemisphereLight (0xffffff, 0x000000, 0.2);
+scene.add(directionalLightMain, directionalLight, ambientLight, hemisphereLight);
 //Camera
 //const camera = new OrthographicCamera( canvas.clientWidth / - 2, canvas.clientWidth / 2, canvas.clientHeight / 2, canvas.clientHeight / - 2, 1, 1000 );
 const camera = new PerspectiveCamera(
