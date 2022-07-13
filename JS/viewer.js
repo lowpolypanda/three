@@ -27,9 +27,10 @@ document.getElementById("title").innerText = title;
 import {
   Scene,
   BoxGeometry,
-  MeshBasicMaterial,
+  MeshLambertMaterial,
   Mesh,
   PerspectiveCamera,
+  OrthographicCamera,
   WebGLRenderer,
   MOUSE,
   Vector2,
@@ -43,6 +44,7 @@ import {
   Raycaster,
   MathUtils,
   Clock,
+  DirectionalLight,
 } from "three";
 import CameraControls from "camera-controls";
 const subsetOfTHREE = {
@@ -67,14 +69,19 @@ const canvas = document.getElementById("viewer-container");
 //Objects
 const xSide = parseInt(id) + 1;
 const geometry = new BoxGeometry(xSide, 1, 1);
-const material = new MeshBasicMaterial({ color: "white" });
+const material = new MeshLambertMaterial({ color: "white" });
 const box = new Mesh(geometry, material);
 scene.add(box);
+//Lights
+const light = new DirectionalLight();
+light.position.set(3, 2, 1).normalize();
+scene.add(light);
 //Camera
+//const camera = new OrthographicCamera( canvas.clientWidth / - 2, canvas.clientWidth / 2, canvas.clientHeight / 2, canvas.clientHeight / - 2, 1, 1000 );
 const camera = new PerspectiveCamera(
-  75,
-  canvas.clientWidth / canvas.clientHeight
-);
+    75,
+    canvas.clientWidth / canvas.clientHeight
+  );
 camera.position.z = 3;
 scene.add(camera);
 // Controls

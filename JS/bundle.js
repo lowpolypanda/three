@@ -28299,6 +28299,335 @@ class Scene extends Object3D {
 
 }
 
+class MeshLambertMaterial extends Material {
+
+	constructor( parameters ) {
+
+		super();
+
+		this.isMeshLambertMaterial = true;
+
+		this.type = 'MeshLambertMaterial';
+
+		this.color = new Color( 0xffffff ); // diffuse
+
+		this.map = null;
+
+		this.lightMap = null;
+		this.lightMapIntensity = 1.0;
+
+		this.aoMap = null;
+		this.aoMapIntensity = 1.0;
+
+		this.emissive = new Color( 0x000000 );
+		this.emissiveIntensity = 1.0;
+		this.emissiveMap = null;
+
+		this.specularMap = null;
+
+		this.alphaMap = null;
+
+		this.envMap = null;
+		this.combine = MultiplyOperation;
+		this.reflectivity = 1;
+		this.refractionRatio = 0.98;
+
+		this.wireframe = false;
+		this.wireframeLinewidth = 1;
+		this.wireframeLinecap = 'round';
+		this.wireframeLinejoin = 'round';
+
+		this.fog = true;
+
+		this.setValues( parameters );
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.color.copy( source.color );
+
+		this.map = source.map;
+
+		this.lightMap = source.lightMap;
+		this.lightMapIntensity = source.lightMapIntensity;
+
+		this.aoMap = source.aoMap;
+		this.aoMapIntensity = source.aoMapIntensity;
+
+		this.emissive.copy( source.emissive );
+		this.emissiveMap = source.emissiveMap;
+		this.emissiveIntensity = source.emissiveIntensity;
+
+		this.specularMap = source.specularMap;
+
+		this.alphaMap = source.alphaMap;
+
+		this.envMap = source.envMap;
+		this.combine = source.combine;
+		this.reflectivity = source.reflectivity;
+		this.refractionRatio = source.refractionRatio;
+
+		this.wireframe = source.wireframe;
+		this.wireframeLinewidth = source.wireframeLinewidth;
+		this.wireframeLinecap = source.wireframeLinecap;
+		this.wireframeLinejoin = source.wireframeLinejoin;
+
+		this.fog = source.fog;
+
+		return this;
+
+	}
+
+}
+
+class Light extends Object3D {
+
+	constructor( color, intensity = 1 ) {
+
+		super();
+
+		this.isLight = true;
+
+		this.type = 'Light';
+
+		this.color = new Color( color );
+		this.intensity = intensity;
+
+	}
+
+	dispose() {
+
+		// Empty here in base class; some subclasses override.
+
+	}
+
+	copy( source, recursive ) {
+
+		super.copy( source, recursive );
+
+		this.color.copy( source.color );
+		this.intensity = source.intensity;
+
+		return this;
+
+	}
+
+	toJSON( meta ) {
+
+		const data = super.toJSON( meta );
+
+		data.object.color = this.color.getHex();
+		data.object.intensity = this.intensity;
+
+		if ( this.groundColor !== undefined ) data.object.groundColor = this.groundColor.getHex();
+
+		if ( this.distance !== undefined ) data.object.distance = this.distance;
+		if ( this.angle !== undefined ) data.object.angle = this.angle;
+		if ( this.decay !== undefined ) data.object.decay = this.decay;
+		if ( this.penumbra !== undefined ) data.object.penumbra = this.penumbra;
+
+		if ( this.shadow !== undefined ) data.object.shadow = this.shadow.toJSON();
+
+		return data;
+
+	}
+
+}
+
+const _projScreenMatrix$1 = /*@__PURE__*/ new Matrix4();
+const _lightPositionWorld$1 = /*@__PURE__*/ new Vector3();
+const _lookTarget$1 = /*@__PURE__*/ new Vector3();
+
+class LightShadow {
+
+	constructor( camera ) {
+
+		this.camera = camera;
+
+		this.bias = 0;
+		this.normalBias = 0;
+		this.radius = 1;
+		this.blurSamples = 8;
+
+		this.mapSize = new Vector2( 512, 512 );
+
+		this.map = null;
+		this.mapPass = null;
+		this.matrix = new Matrix4();
+
+		this.autoUpdate = true;
+		this.needsUpdate = false;
+
+		this._frustum = new Frustum();
+		this._frameExtents = new Vector2( 1, 1 );
+
+		this._viewportCount = 1;
+
+		this._viewports = [
+
+			new Vector4( 0, 0, 1, 1 )
+
+		];
+
+	}
+
+	getViewportCount() {
+
+		return this._viewportCount;
+
+	}
+
+	getFrustum() {
+
+		return this._frustum;
+
+	}
+
+	updateMatrices( light ) {
+
+		const shadowCamera = this.camera;
+		const shadowMatrix = this.matrix;
+
+		_lightPositionWorld$1.setFromMatrixPosition( light.matrixWorld );
+		shadowCamera.position.copy( _lightPositionWorld$1 );
+
+		_lookTarget$1.setFromMatrixPosition( light.target.matrixWorld );
+		shadowCamera.lookAt( _lookTarget$1 );
+		shadowCamera.updateMatrixWorld();
+
+		_projScreenMatrix$1.multiplyMatrices( shadowCamera.projectionMatrix, shadowCamera.matrixWorldInverse );
+		this._frustum.setFromProjectionMatrix( _projScreenMatrix$1 );
+
+		shadowMatrix.set(
+			0.5, 0.0, 0.0, 0.5,
+			0.0, 0.5, 0.0, 0.5,
+			0.0, 0.0, 0.5, 0.5,
+			0.0, 0.0, 0.0, 1.0
+		);
+
+		shadowMatrix.multiply( shadowCamera.projectionMatrix );
+		shadowMatrix.multiply( shadowCamera.matrixWorldInverse );
+
+	}
+
+	getViewport( viewportIndex ) {
+
+		return this._viewports[ viewportIndex ];
+
+	}
+
+	getFrameExtents() {
+
+		return this._frameExtents;
+
+	}
+
+	dispose() {
+
+		if ( this.map ) {
+
+			this.map.dispose();
+
+		}
+
+		if ( this.mapPass ) {
+
+			this.mapPass.dispose();
+
+		}
+
+	}
+
+	copy( source ) {
+
+		this.camera = source.camera.clone();
+
+		this.bias = source.bias;
+		this.radius = source.radius;
+
+		this.mapSize.copy( source.mapSize );
+
+		return this;
+
+	}
+
+	clone() {
+
+		return new this.constructor().copy( this );
+
+	}
+
+	toJSON() {
+
+		const object = {};
+
+		if ( this.bias !== 0 ) object.bias = this.bias;
+		if ( this.normalBias !== 0 ) object.normalBias = this.normalBias;
+		if ( this.radius !== 1 ) object.radius = this.radius;
+		if ( this.mapSize.x !== 512 || this.mapSize.y !== 512 ) object.mapSize = this.mapSize.toArray();
+
+		object.camera = this.camera.toJSON( false ).object;
+		delete object.camera.matrix;
+
+		return object;
+
+	}
+
+}
+
+class DirectionalLightShadow extends LightShadow {
+
+	constructor() {
+
+		super( new OrthographicCamera( - 5, 5, 5, - 5, 0.5, 500 ) );
+
+		this.isDirectionalLightShadow = true;
+
+	}
+
+}
+
+class DirectionalLight extends Light {
+
+	constructor( color, intensity ) {
+
+		super( color, intensity );
+
+		this.isDirectionalLight = true;
+
+		this.type = 'DirectionalLight';
+
+		this.position.copy( Object3D.DefaultUp );
+		this.updateMatrix();
+
+		this.target = new Object3D();
+
+		this.shadow = new DirectionalLightShadow();
+
+	}
+
+	dispose() {
+
+		this.shadow.dispose();
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.target = source.target.clone();
+		this.shadow = source.shadow.clone();
+
+		return this;
+
+	}
+
+}
+
 class Clock {
 
 	constructor( autoStart = true ) {
@@ -30682,14 +31011,19 @@ const canvas = document.getElementById("viewer-container");
 //Objects
 const xSide = parseInt(id) + 1;
 const geometry = new BoxGeometry(xSide, 1, 1);
-const material = new MeshBasicMaterial({ color: "white" });
+const material = new MeshLambertMaterial({ color: "white" });
 const box = new Mesh(geometry, material);
 scene.add(box);
+//Lights
+const light = new DirectionalLight();
+light.position.set(3, 2, 1).normalize();
+scene.add(light);
 //Camera
+//const camera = new OrthographicCamera( canvas.clientWidth / - 2, canvas.clientWidth / 2, canvas.clientHeight / 2, canvas.clientHeight / - 2, 1, 1000 );
 const camera = new PerspectiveCamera(
-  75,
-  canvas.clientWidth / canvas.clientHeight
-);
+    75,
+    canvas.clientWidth / canvas.clientHeight
+  );
 camera.position.z = 3;
 scene.add(camera);
 // Controls
