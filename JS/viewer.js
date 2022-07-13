@@ -60,6 +60,8 @@ import {
   DirectionalLight,
   AmbientLight,
   HemisphereLight,
+  AxesHelper,
+  GridHelper
 } from "three";
 import CameraControls from "camera-controls";
 const subsetOfTHREE = {
@@ -81,10 +83,18 @@ const subsetOfTHREE = {
 //Scene
 const scene = new Scene();
 const canvas = document.getElementById("viewer-container");
+//Helpers
+const axes = new AxesHelper();
+axes.material.depthTest = false;
+axes.renderOrder = 2;
+scene.add(axes);
+const grid = new GridHelper();
+grid.renderOrder = 1;
+scene.add(grid);
 //Objects
 const xSide = parseInt(id) + 1;
 const geometry = new BoxGeometry(xSide, 1, 1);
-const material = new MeshLambertMaterial({ color: 0xaaaaaa });
+const material = new MeshLambertMaterial({ color: 0xffaa00 });
 const box = new Mesh(geometry, material);
 scene.add(box);
 //Lights
@@ -102,6 +112,8 @@ const camera = new PerspectiveCamera(
   75,
   canvas.clientWidth / canvas.clientHeight
 );
+camera.position.x = 3;
+camera.position.y = 3;
 camera.position.z = 3;
 scene.add(camera);
 // Controls
@@ -114,6 +126,7 @@ cameraControls.dollyToCursor = true;
 const renderer = new WebGLRenderer({ canvas: canvas });
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+renderer.setClearColor(0xf0f0f0, 1);
 //Responsivity
 window.addEventListener("resize", () => {
   camera.aspect = canvas.clientWidth / canvas.clientHeight;
