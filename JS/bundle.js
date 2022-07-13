@@ -28628,6 +28628,20 @@ class DirectionalLight extends Light {
 
 }
 
+class AmbientLight extends Light {
+
+	constructor( color, intensity ) {
+
+		super( color, intensity );
+
+		this.isAmbientLight = true;
+
+		this.type = 'AmbientLight';
+
+	}
+
+}
+
 class Clock {
 
 	constructor( autoStart = true ) {
@@ -30968,6 +30982,9 @@ function createBoundingSphere(object3d, out) {
 }
 
 //SIDEBARMENU
+const sideBarText = document
+  .getElementById("sidebar")
+  .querySelectorAll(".menuText");
 let isOnDiv = false;
 document.getElementById("menuOpen").addEventListener("click", open);
 document.getElementById("menuClose").addEventListener("click", close);
@@ -30978,15 +30995,22 @@ function open() {
   document.getElementById("sidebar").style.width = "15rem";
   document.getElementById("menuClose").style.display = "";
   document.getElementById("menuOpen").style.display = "none";
-  document.getElementById("menuText").style.visibility = "visible";
-  document.getElementById("menuText").style.opacity = "1";
+  const iterator = sideBarText.values();
+  for (const value of iterator) {
+    value.style.visibility = "visible";
+    value.style.opacity = "1";
+  }
 }
 function close() {
   console.log("tancar" + isOnDiv);
   document.getElementById("sidebar").style.width = "2.5rem";
   document.getElementById("menuClose").style.display = "none";
   document.getElementById("menuOpen").style.display = "";
-  document.getElementById("menuText").style.opacity = "0";
+  const iterator = sideBarText.values();
+  for (const value of iterator) {
+    value.style.visibility = "";
+    value.style.opacity = "0";
+  }
 }
 const urlParam = new URLSearchParams(window.location.search);
 const id = urlParam.get("id");
@@ -31018,22 +31042,23 @@ const material = new MeshLambertMaterial({ color: 0xaaaaaa });
 const box = new Mesh(geometry, material);
 scene.add(box);
 //Lights
-const light = new DirectionalLight();
-light.position.set(3, 2, 1).normalize();
-scene.add(light);
+const directionalLight = new DirectionalLight();
+directionalLight.position.set(3, 2, 1).normalize();
+const ambientLight = new AmbientLight(0xffffff, 0.2);
+scene.add(directionalLight, ambientLight);
 //Camera
 //const camera = new OrthographicCamera( canvas.clientWidth / - 2, canvas.clientWidth / 2, canvas.clientHeight / 2, canvas.clientHeight / - 2, 1, 1000 );
 const camera = new PerspectiveCamera(
-    75,
-    canvas.clientWidth / canvas.clientHeight
-  );
+  75,
+  canvas.clientWidth / canvas.clientHeight
+);
 camera.position.z = 3;
 scene.add(camera);
 // Controls
 CameraControls.install({ THREE: subsetOfTHREE });
 const clock = new Clock();
 const cameraControls = new CameraControls(camera, canvas);
-cameraControls.dollyToCursor=true;
+cameraControls.dollyToCursor = true;
 //cameraControls.setOrbitPoint(0,0,0);
 //Renderer
 const renderer = new WebGLRenderer({ canvas: canvas });
