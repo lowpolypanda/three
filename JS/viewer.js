@@ -172,7 +172,7 @@ hiddenlineButton.addEventListener("click", hiddenlineFunc);
 function hiddenlineFunc() {
   const box = scene.getObjectByName("box");
   scene.remove(box);
-  const fillMaterial = new MeshPhongMaterial ({
+  const fillMaterial = new MeshLambertMaterial ({
     color: 0xffffff,
     polygonOffset: true,
     polygonOffsetFactor: 1, 
