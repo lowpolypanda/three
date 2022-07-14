@@ -40,6 +40,10 @@ document.getElementById("title").innerText = title;
 import {
   Scene,
   BoxGeometry,
+  BoxBufferGeometry,
+  EdgesGeometry,
+  LineSegments,
+  LineBasicMaterial,
   MeshLambertMaterial,
   Mesh,
   PerspectiveCamera,
@@ -61,7 +65,9 @@ import {
   AmbientLight,
   HemisphereLight,
   AxesHelper,
-  GridHelper
+  GridHelper,
+  MeshPhongMaterial,
+  WireframeGeometry,
 } from "three";
 import CameraControls from "camera-controls";
 const subsetOfTHREE = {
@@ -96,16 +102,22 @@ const xSide = parseInt(id) + 1;
 const geometry = new BoxGeometry(xSide, 1, 1);
 const material = new MeshLambertMaterial({ color: 0x02be6e });
 const box = new Mesh(geometry, material);
+box.name = "box";
 scene.add(box);
 //Lights
 const directionalLightMain = new DirectionalLight();
 directionalLightMain.position.set(3, 2, 1);
 const directionalLight = new DirectionalLight();
-directionalLight.position.set(0xffffff, 0.1)
+directionalLight.position.set(0xffffff, 0.1);
 directionalLight.position.set(-3, -2, -1);
 const ambientLight = new AmbientLight(0xffffff, 0.2);
-const hemisphereLight = new HemisphereLight (0xffffff, 0x000000, 0.2);
-scene.add(directionalLightMain, directionalLight, ambientLight, hemisphereLight);
+const hemisphereLight = new HemisphereLight(0xffffff, 0x000000, 0.2);
+scene.add(
+  directionalLightMain,
+  directionalLight,
+  ambientLight,
+  hemisphereLight
+);
 //Camera
 //const camera = new OrthographicCamera( canvas.clientWidth / - 2, canvas.clientWidth / 2, canvas.clientHeight / 2, canvas.clientHeight / - 2, 1, 1000 );
 const camera = new PerspectiveCamera(
@@ -141,3 +153,46 @@ function animate() {
   requestAnimationFrame(animate);
 }
 animate();
+//Listeners
+const wireframeButton = document.getElementById("wireframeButton");
+wireframeButton.addEventListener("click", wireframeFunc);
+function wireframeFunc() {
+  const box = scene.getObjectByName("box");
+  scene.remove(box);
+  const geometry = box.geometry;
+  const wireframeGeometry = new EdgesGeometry(geometry);
+  const lineMaterial = new LineBasicMaterial({ color: 0x000000, linewidth: 2});
+  const wireframe = new LineSegments(wireframeGeometry, lineMaterial);
+  scene.add(wireframe);
+  wireframe.name = "box";
+}
+
+const hiddenlineButton = document.getElementById("hiddenlineButton");
+hiddenlineButton.addEventListener("click", hiddenlineFunc);
+function hiddenlineFunc() {
+  const box = scene.getObjectByName("box");
+  scene.remove(box);
+  const fillMaterial = new MeshPhongMaterial ({
+    color: 0xffffff,
+    polygonOffset: true,
+    polygonOffsetFactor: 1, 
+    polygonOffsetUnits: 1
+  })
+  const fill = new Mesh (geometry, fillMaterial);
+  const lineMaterial = new LineBasicMaterial({ color: 0x000000, linewidth: 2});
+  const wireframeGeometry = new EdgesGeometry(geometry);
+  const wireframe = new LineSegments(wireframeGeometry, lineMaterial);
+  scene.add(fill);
+  fill.name = "box";
+  fill.add(wireframe);
+}
+
+const shadedButton = document.getElementById("shadedButton");
+shadedButton.addEventListener("click", shadedFunc);
+function shadedFunc() {
+  const boxdel = scene.getObjectByName("box");
+  scene.remove(boxdel);
+  const box = new Mesh(geometry, material);
+  scene.add(box);
+  box.name = "box";
+}

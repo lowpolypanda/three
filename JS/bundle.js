@@ -28602,6 +28602,254 @@ class LineSegments extends Line {
 
 }
 
+const _v0 = /*@__PURE__*/ new Vector3();
+const _v1$1 = /*@__PURE__*/ new Vector3();
+const _normal = /*@__PURE__*/ new Vector3();
+const _triangle = /*@__PURE__*/ new Triangle();
+
+class EdgesGeometry extends BufferGeometry {
+
+	constructor( geometry = null, thresholdAngle = 1 ) {
+
+		super();
+		this.type = 'EdgesGeometry';
+
+		this.parameters = {
+			geometry: geometry,
+			thresholdAngle: thresholdAngle
+		};
+
+		if ( geometry !== null ) {
+
+			const precisionPoints = 4;
+			const precision = Math.pow( 10, precisionPoints );
+			const thresholdDot = Math.cos( DEG2RAD * thresholdAngle );
+
+			const indexAttr = geometry.getIndex();
+			const positionAttr = geometry.getAttribute( 'position' );
+			const indexCount = indexAttr ? indexAttr.count : positionAttr.count;
+
+			const indexArr = [ 0, 0, 0 ];
+			const vertKeys = [ 'a', 'b', 'c' ];
+			const hashes = new Array( 3 );
+
+			const edgeData = {};
+			const vertices = [];
+			for ( let i = 0; i < indexCount; i += 3 ) {
+
+				if ( indexAttr ) {
+
+					indexArr[ 0 ] = indexAttr.getX( i );
+					indexArr[ 1 ] = indexAttr.getX( i + 1 );
+					indexArr[ 2 ] = indexAttr.getX( i + 2 );
+
+				} else {
+
+					indexArr[ 0 ] = i;
+					indexArr[ 1 ] = i + 1;
+					indexArr[ 2 ] = i + 2;
+
+				}
+
+				const { a, b, c } = _triangle;
+				a.fromBufferAttribute( positionAttr, indexArr[ 0 ] );
+				b.fromBufferAttribute( positionAttr, indexArr[ 1 ] );
+				c.fromBufferAttribute( positionAttr, indexArr[ 2 ] );
+				_triangle.getNormal( _normal );
+
+				// create hashes for the edge from the vertices
+				hashes[ 0 ] = `${ Math.round( a.x * precision ) },${ Math.round( a.y * precision ) },${ Math.round( a.z * precision ) }`;
+				hashes[ 1 ] = `${ Math.round( b.x * precision ) },${ Math.round( b.y * precision ) },${ Math.round( b.z * precision ) }`;
+				hashes[ 2 ] = `${ Math.round( c.x * precision ) },${ Math.round( c.y * precision ) },${ Math.round( c.z * precision ) }`;
+
+				// skip degenerate triangles
+				if ( hashes[ 0 ] === hashes[ 1 ] || hashes[ 1 ] === hashes[ 2 ] || hashes[ 2 ] === hashes[ 0 ] ) {
+
+					continue;
+
+				}
+
+				// iterate over every edge
+				for ( let j = 0; j < 3; j ++ ) {
+
+					// get the first and next vertex making up the edge
+					const jNext = ( j + 1 ) % 3;
+					const vecHash0 = hashes[ j ];
+					const vecHash1 = hashes[ jNext ];
+					const v0 = _triangle[ vertKeys[ j ] ];
+					const v1 = _triangle[ vertKeys[ jNext ] ];
+
+					const hash = `${ vecHash0 }_${ vecHash1 }`;
+					const reverseHash = `${ vecHash1 }_${ vecHash0 }`;
+
+					if ( reverseHash in edgeData && edgeData[ reverseHash ] ) {
+
+						// if we found a sibling edge add it into the vertex array if
+						// it meets the angle threshold and delete the edge from the map.
+						if ( _normal.dot( edgeData[ reverseHash ].normal ) <= thresholdDot ) {
+
+							vertices.push( v0.x, v0.y, v0.z );
+							vertices.push( v1.x, v1.y, v1.z );
+
+						}
+
+						edgeData[ reverseHash ] = null;
+
+					} else if ( ! ( hash in edgeData ) ) {
+
+						// if we've already got an edge here then skip adding a new one
+						edgeData[ hash ] = {
+
+							index0: indexArr[ j ],
+							index1: indexArr[ jNext ],
+							normal: _normal.clone(),
+
+						};
+
+					}
+
+				}
+
+			}
+
+			// iterate over all remaining, unmatched edges and add them to the vertex array
+			for ( const key in edgeData ) {
+
+				if ( edgeData[ key ] ) {
+
+					const { index0, index1 } = edgeData[ key ];
+					_v0.fromBufferAttribute( positionAttr, index0 );
+					_v1$1.fromBufferAttribute( positionAttr, index1 );
+
+					vertices.push( _v0.x, _v0.y, _v0.z );
+					vertices.push( _v1$1.x, _v1$1.y, _v1$1.z );
+
+				}
+
+			}
+
+			this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+
+		}
+
+	}
+
+}
+
+class MeshPhongMaterial extends Material {
+
+	constructor( parameters ) {
+
+		super();
+
+		this.isMeshPhongMaterial = true;
+
+		this.type = 'MeshPhongMaterial';
+
+		this.color = new Color( 0xffffff ); // diffuse
+		this.specular = new Color( 0x111111 );
+		this.shininess = 30;
+
+		this.map = null;
+
+		this.lightMap = null;
+		this.lightMapIntensity = 1.0;
+
+		this.aoMap = null;
+		this.aoMapIntensity = 1.0;
+
+		this.emissive = new Color( 0x000000 );
+		this.emissiveIntensity = 1.0;
+		this.emissiveMap = null;
+
+		this.bumpMap = null;
+		this.bumpScale = 1;
+
+		this.normalMap = null;
+		this.normalMapType = TangentSpaceNormalMap;
+		this.normalScale = new Vector2( 1, 1 );
+
+		this.displacementMap = null;
+		this.displacementScale = 1;
+		this.displacementBias = 0;
+
+		this.specularMap = null;
+
+		this.alphaMap = null;
+
+		this.envMap = null;
+		this.combine = MultiplyOperation;
+		this.reflectivity = 1;
+		this.refractionRatio = 0.98;
+
+		this.wireframe = false;
+		this.wireframeLinewidth = 1;
+		this.wireframeLinecap = 'round';
+		this.wireframeLinejoin = 'round';
+
+		this.flatShading = false;
+
+		this.fog = true;
+
+		this.setValues( parameters );
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.color.copy( source.color );
+		this.specular.copy( source.specular );
+		this.shininess = source.shininess;
+
+		this.map = source.map;
+
+		this.lightMap = source.lightMap;
+		this.lightMapIntensity = source.lightMapIntensity;
+
+		this.aoMap = source.aoMap;
+		this.aoMapIntensity = source.aoMapIntensity;
+
+		this.emissive.copy( source.emissive );
+		this.emissiveMap = source.emissiveMap;
+		this.emissiveIntensity = source.emissiveIntensity;
+
+		this.bumpMap = source.bumpMap;
+		this.bumpScale = source.bumpScale;
+
+		this.normalMap = source.normalMap;
+		this.normalMapType = source.normalMapType;
+		this.normalScale.copy( source.normalScale );
+
+		this.displacementMap = source.displacementMap;
+		this.displacementScale = source.displacementScale;
+		this.displacementBias = source.displacementBias;
+
+		this.specularMap = source.specularMap;
+
+		this.alphaMap = source.alphaMap;
+
+		this.envMap = source.envMap;
+		this.combine = source.combine;
+		this.reflectivity = source.reflectivity;
+		this.refractionRatio = source.refractionRatio;
+
+		this.wireframe = source.wireframe;
+		this.wireframeLinewidth = source.wireframeLinewidth;
+		this.wireframeLinecap = source.wireframeLinecap;
+		this.wireframeLinejoin = source.wireframeLinejoin;
+
+		this.flatShading = source.flatShading;
+
+		this.fog = source.fog;
+
+		return this;
+
+	}
+
+}
+
 class MeshLambertMaterial extends Material {
 
 	constructor( parameters ) {
@@ -31481,6 +31729,7 @@ const xSide = parseInt(id) + 1;
 const geometry = new BoxGeometry(xSide, 1, 1);
 const material = new MeshLambertMaterial({ color: 0x02be6e });
 const box = new Mesh(geometry, material);
+box.name = "box";
 scene.add(box);
 //Lights
 const directionalLightMain = new DirectionalLight();
@@ -31489,8 +31738,13 @@ const directionalLight = new DirectionalLight();
 directionalLight.position.set(0xffffff, 0.1);
 directionalLight.position.set(-3, -2, -1);
 const ambientLight = new AmbientLight(0xffffff, 0.2);
-const hemisphereLight = new HemisphereLight (0xffffff, 0x000000, 0.2);
-scene.add(directionalLightMain, directionalLight, ambientLight, hemisphereLight);
+const hemisphereLight = new HemisphereLight(0xffffff, 0x000000, 0.2);
+scene.add(
+  directionalLightMain,
+  directionalLight,
+  ambientLight,
+  hemisphereLight
+);
 //Camera
 //const camera = new OrthographicCamera( canvas.clientWidth / - 2, canvas.clientWidth / 2, canvas.clientHeight / 2, canvas.clientHeight / - 2, 1, 1000 );
 const camera = new PerspectiveCamera(
@@ -31526,3 +31780,46 @@ function animate() {
   requestAnimationFrame(animate);
 }
 animate();
+//Listeners
+const wireframeButton = document.getElementById("wireframeButton");
+wireframeButton.addEventListener("click", wireframeFunc);
+function wireframeFunc() {
+  const box = scene.getObjectByName("box");
+  scene.remove(box);
+  const geometry = box.geometry;
+  const wireframeGeometry = new EdgesGeometry(geometry);
+  const lineMaterial = new LineBasicMaterial({ color: 0x000000, linewidth: 2});
+  const wireframe = new LineSegments(wireframeGeometry, lineMaterial);
+  scene.add(wireframe);
+  wireframe.name = "box";
+}
+
+const hiddenlineButton = document.getElementById("hiddenlineButton");
+hiddenlineButton.addEventListener("click", hiddenlineFunc);
+function hiddenlineFunc() {
+  const box = scene.getObjectByName("box");
+  scene.remove(box);
+  const fillMaterial = new MeshPhongMaterial ({
+    color: 0xffffff,
+    polygonOffset: true,
+    polygonOffsetFactor: 1, 
+    polygonOffsetUnits: 1
+  });
+  const fill = new Mesh (geometry, fillMaterial);
+  const lineMaterial = new LineBasicMaterial({ color: 0x000000, linewidth: 2});
+  const wireframeGeometry = new EdgesGeometry(geometry);
+  const wireframe = new LineSegments(wireframeGeometry, lineMaterial);
+  scene.add(fill);
+  fill.name = "box";
+  fill.add(wireframe);
+}
+
+const shadedButton = document.getElementById("shadedButton");
+shadedButton.addEventListener("click", shadedFunc);
+function shadedFunc() {
+  const boxdel = scene.getObjectByName("box");
+  scene.remove(boxdel);
+  const box = new Mesh(geometry, material);
+  scene.add(box);
+  box.name = "box";
+}
