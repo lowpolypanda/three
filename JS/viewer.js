@@ -145,6 +145,21 @@ window.addEventListener("resize", () => {
   camera.updateProjectionMatrix();
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 });
+//Raycaster
+const raycaster = new Raycaster();
+const mouse = new Vector2();
+const container = document.getElementById( 'viewer-container' );
+
+window.addEventListener("click", (event) => {
+  mouse.x = ( ( event.clientX - container.offsetLeft ) / container.clientWidth ) * 2 - 1;
+  mouse.y = - ( ( event.clientY - container.offsetTop ) / container.clientHeight ) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  let found = raycaster.intersectObjects(scene.children);
+  ////////////////
+  found = found.filter(found => found.object.type === 'Mesh');
+  console.log(found);
+
+});
 //Animation
 function animate() {
   const delta = clock.getDelta();
@@ -202,11 +217,15 @@ function wireframeObject() {
   wireframe.name = "wireframeBox";
   scene.add(wireframe);
   wireframeStatus = true;
-};
+}
 const axesButton = document.getElementById("axesButton");
-axesButton.addEventListener("click", function() {visibilityFunc(axes)});
+axesButton.addEventListener("click", function () {
+  visibilityFunc(axes);
+});
 const gridButton = document.getElementById("gridButton");
-gridButton.addEventListener("click", function() {visibilityFunc(grid)});
+gridButton.addEventListener("click", function () {
+  visibilityFunc(grid);
+});
 function visibilityFunc(object) {
-  object.visible=!object.visible;
+  object.visible = !object.visible;
 }
