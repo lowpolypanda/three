@@ -31667,45 +31667,52 @@ function animate() {
 }
 animate();
 //Listeners
+let wireframeStatus = false;
 const wireframeButton = document.getElementById("wireframeButton");
 wireframeButton.addEventListener("click", wireframeFunc);
 function wireframeFunc() {
   const box = scene.getObjectByName("box");
-  scene.remove(box);
-  const geometry = box.geometry;
-  const wireframeGeometry = new EdgesGeometry(geometry);
-  const lineMaterial = new LineBasicMaterial({ color: 0x000000, linewidth: 2});
-  const wireframe = new LineSegments(wireframeGeometry, lineMaterial);
-  scene.add(wireframe);
-  wireframe.name = "box";
+  box.visible = false;
+  if (wireframeStatus === false) {
+    wireframeObject();
+  }
 }
-
 const hiddenlineButton = document.getElementById("hiddenlineButton");
 hiddenlineButton.addEventListener("click", hiddenlineFunc);
 function hiddenlineFunc() {
-  const box = scene.getObjectByName("box");
-  scene.remove(box);
-  const fillMaterial = new MeshLambertMaterial ({
+  const fillMaterial = new MeshLambertMaterial({
     color: 0xffffff,
     polygonOffset: true,
-    polygonOffsetFactor: 1, 
-    polygonOffsetUnits: 1
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 1,
   });
-  const fill = new Mesh (geometry, fillMaterial);
-  const lineMaterial = new LineBasicMaterial({ color: 0x000000, linewidth: 2});
-  const wireframeGeometry = new EdgesGeometry(geometry);
-  const wireframe = new LineSegments(wireframeGeometry, lineMaterial);
-  scene.add(fill);
-  fill.name = "box";
-  fill.add(wireframe);
+  box.material = fillMaterial;
+  box.visible = true;
+  if (wireframeStatus === false) {
+    wireframeObject();
+  }
 }
-
 const shadedButton = document.getElementById("shadedButton");
 shadedButton.addEventListener("click", shadedFunc);
 function shadedFunc() {
-  const boxdel = scene.getObjectByName("box");
-  scene.remove(boxdel);
-  const box = new Mesh(geometry, material);
-  scene.add(box);
-  box.name = "box";
+  box.material = material;
+  box.visible = true;
+  if (wireframeStatus === true) {
+    wireframeBox = scene.getObjectByName("wireframeBox");
+    wireframeBox.geometry.dispose();
+    wireframeBox.material.dispose();
+    scene.remove(wireframeBox);
+  }
+  wireframeStatus = false;
+}
+function wireframeObject() {
+  const wireframeGeometry = new EdgesGeometry(geometry);
+  const wireframeMaterial = new LineBasicMaterial({
+    color: 0x000000,
+    linewidth: 2,
+  });
+  const wireframe = new LineSegments(wireframeGeometry, wireframeMaterial);
+  wireframe.name = "wireframeBox";
+  scene.add(wireframe);
+  wireframeStatus = true;
 }
