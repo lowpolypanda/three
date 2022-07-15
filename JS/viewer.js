@@ -202,4 +202,11 @@ function wireframeObject() {
   wireframe.name = "wireframeBox";
   scene.add(wireframe);
   wireframeStatus = true;
+};
+const axesButton = document.getElementById("axesButton");
+axesButton.addEventListener("click", function() {visibilityFunc(axes)});
+const gridButton = document.getElementById("gridButton");
+gridButton.addEventListener("click", function() {visibilityFunc(grid)});
+function visibilityFunc(object) {
+  object.visible=!object.visible;
 }
