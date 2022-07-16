@@ -31613,9 +31613,13 @@ scene.add(grid);
 //Objects
 const xSide = parseInt(id) + 1;
 const geometry = new BoxGeometry(xSide, 1, 1);
+const geometry2 = new BoxGeometry(1, xSide, 1);
 const material = new MeshLambertMaterial({ color: 0x02be6e });
+const material2 = new MeshLambertMaterial({ color: 0xffff00 });
 const box = new Mesh(geometry, material);
-box.name = "box";
+const box2 = new Mesh(geometry2, material2);
+box2.position.set(2, 0, 2);
+scene.add(box2);
 scene.add(box);
 //Lights
 const directionalLightMain = new DirectionalLight();
@@ -31661,17 +31665,16 @@ window.addEventListener("resize", () => {
 //Raycaster
 const raycaster = new Raycaster();
 const mouse = new Vector2();
-const container = document.getElementById( 'viewer-container' );
-
+const container = document.getElementById("viewer-container");
 window.addEventListener("click", (event) => {
-  mouse.x = ( ( event.clientX - container.offsetLeft ) / container.clientWidth ) * 2 - 1;
-  mouse.y = - ( ( event.clientY - container.offsetTop ) / container.clientHeight ) * 2 + 1;
+  mouse.x =
+    ((event.clientX - container.offsetLeft) / container.clientWidth) * 2 - 1;
+  mouse.y =
+    -((event.clientY - container.offsetTop) / container.clientHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
   let found = raycaster.intersectObjects(scene.children);
-  ////////////////
-  found = found.filter(found => found.object.type === 'Mesh');
-  console.log(found);
-
+  found = found.filter((found) => found.object.type === "Mesh");
+  console.log(found[0]);
 });
 //Animation
 function animate() {
@@ -31683,13 +31686,25 @@ function animate() {
 animate();
 //Listeners
 let wireframeStatus = false;
+const meshArray = [];
+scene.traverse((object) => {
+  if (object.isMesh) {
+    meshArray.push(object);
+  }
+});
+for (i = 0; i < meshArray.length; i++) {
+  meshArray[i].userData = meshArray[i].material;
+}
 const wireframeButton = document.getElementById("wireframeButton");
 wireframeButton.addEventListener("click", wireframeFunc);
 function wireframeFunc() {
-  const box = scene.getObjectByName("box");
-  box.visible = false;
+  for (i = 0; i < meshArray.length; i++) {
+    meshArray[i].visible = false;
+  }
   if (wireframeStatus === false) {
-    wireframeObject();
+    for (i = 0; i < meshArray.length; i++) {
+      wireframeObject(meshArray[i]);
+    }
   }
 }
 const hiddenlineButton = document.getElementById("hiddenlineButton");
@@ -31701,33 +31716,53 @@ function hiddenlineFunc() {
     polygonOffsetFactor: 1,
     polygonOffsetUnits: 1,
   });
+  for (i = 0; i < meshArray.length; i++) {
+    meshArray[i].material = fillMaterial;
+    meshArray[i].visible = true;
+  }
   box.material = fillMaterial;
   box.visible = true;
   if (wireframeStatus === false) {
-    wireframeObject();
+    for (i = 0; i < meshArray.length; i++) {
+      wireframeObject(meshArray[i]);
+    }
   }
 }
 const shadedButton = document.getElementById("shadedButton");
 shadedButton.addEventListener("click", shadedFunc);
 function shadedFunc() {
-  box.material = material;
-  box.visible = true;
+  for (i = 0; i < meshArray.length; i++) {
+    meshArray[i].material = meshArray[i].userData;
+    meshArray[i].visible = true;
+  }
   if (wireframeStatus === true) {
-    wireframeBox = scene.getObjectByName("wireframeBox");
-    wireframeBox.geometry.dispose();
-    wireframeBox.material.dispose();
-    scene.remove(wireframeBox);
+    const wireframeArray = [];
+    scene.traverse((object) => {
+      if (
+        object.isLineSegments &&
+        object.getObjectByName("Wireframe element")
+      ) {
+        wireframeArray.push(object);
+      }
+    });
+    for (i = 0; i < wireframeArray.length; i++) {
+      scene.remove(wireframeArray[i]);
+      wireframeArray[i].geometry.dispose();
+      wireframeArray[i].material.dispose();
+    }
   }
   wireframeStatus = false;
 }
-function wireframeObject() {
-  const wireframeGeometry = new EdgesGeometry(geometry);
+function wireframeObject(element) {
+  const wireframeGeometry = new EdgesGeometry(element.geometry);
   const wireframeMaterial = new LineBasicMaterial({
     color: 0x000000,
     linewidth: 2,
   });
   const wireframe = new LineSegments(wireframeGeometry, wireframeMaterial);
-  wireframe.name = "wireframeBox";
+  const vector = element.position;
+  wireframe.position.set(vector.x, vector.y, vector.z);
+  wireframe.name = "Wireframe element";
   scene.add(wireframe);
   wireframeStatus = true;
 }
