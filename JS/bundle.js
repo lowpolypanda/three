@@ -31548,6 +31548,209 @@ function createBoundingSphere(object3d, out) {
     return boundingSphere;
 }
 
+class CSS2DObject extends Object3D {
+
+	constructor( element = document.createElement( 'div' ) ) {
+
+		super();
+
+		this.isCSS2DObject = true;
+
+		this.element = element;
+
+		this.element.style.position = 'absolute';
+		this.element.style.userSelect = 'none';
+
+		this.element.setAttribute( 'draggable', false );
+
+		this.addEventListener( 'removed', function () {
+
+			this.traverse( function ( object ) {
+
+				if ( object.element instanceof Element && object.element.parentNode !== null ) {
+
+					object.element.parentNode.removeChild( object.element );
+
+				}
+
+			} );
+
+		} );
+
+	}
+
+	copy( source, recursive ) {
+
+		super.copy( source, recursive );
+
+		this.element = source.element.cloneNode( true );
+
+		return this;
+
+	}
+
+}
+
+//
+
+const _vector = new Vector3();
+const _viewMatrix = new Matrix4();
+const _viewProjectionMatrix = new Matrix4();
+const _a = new Vector3();
+const _b = new Vector3();
+
+class CSS2DRenderer {
+
+	constructor( parameters = {} ) {
+
+		const _this = this;
+
+		let _width, _height;
+		let _widthHalf, _heightHalf;
+
+		const cache = {
+			objects: new WeakMap()
+		};
+
+		const domElement = parameters.element !== undefined ? parameters.element : document.createElement( 'div' );
+
+		domElement.style.overflow = 'hidden';
+
+		this.domElement = domElement;
+
+		this.getSize = function () {
+
+			return {
+				width: _width,
+				height: _height
+			};
+
+		};
+
+		this.render = function ( scene, camera ) {
+
+			if ( scene.autoUpdate === true ) scene.updateMatrixWorld();
+			if ( camera.parent === null ) camera.updateMatrixWorld();
+
+			_viewMatrix.copy( camera.matrixWorldInverse );
+			_viewProjectionMatrix.multiplyMatrices( camera.projectionMatrix, _viewMatrix );
+
+			renderObject( scene, scene, camera );
+			zOrder( scene );
+
+		};
+
+		this.setSize = function ( width, height ) {
+
+			_width = width;
+			_height = height;
+
+			_widthHalf = _width / 2;
+			_heightHalf = _height / 2;
+
+			domElement.style.width = width + 'px';
+			domElement.style.height = height + 'px';
+
+		};
+
+		function renderObject( object, scene, camera ) {
+
+			if ( object.isCSS2DObject ) {
+
+				_vector.setFromMatrixPosition( object.matrixWorld );
+				_vector.applyMatrix4( _viewProjectionMatrix );
+
+				const visible = ( object.visible === true ) && ( _vector.z >= - 1 && _vector.z <= 1 ) && ( object.layers.test( camera.layers ) === true );
+				object.element.style.display = ( visible === true ) ? '' : 'none';
+
+				if ( visible === true ) {
+
+					object.onBeforeRender( _this, scene, camera );
+
+					const element = object.element;
+
+					element.style.transform = 'translate(-50%,-50%) translate(' + ( _vector.x * _widthHalf + _widthHalf ) + 'px,' + ( - _vector.y * _heightHalf + _heightHalf ) + 'px)';
+
+					if ( element.parentNode !== domElement ) {
+
+						domElement.appendChild( element );
+
+					}
+
+					object.onAfterRender( _this, scene, camera );
+
+				}
+
+				const objectData = {
+					distanceToCameraSquared: getDistanceToSquared( camera, object )
+				};
+
+				cache.objects.set( object, objectData );
+
+			}
+
+			for ( let i = 0, l = object.children.length; i < l; i ++ ) {
+
+				renderObject( object.children[ i ], scene, camera );
+
+			}
+
+		}
+
+		function getDistanceToSquared( object1, object2 ) {
+
+			_a.setFromMatrixPosition( object1.matrixWorld );
+			_b.setFromMatrixPosition( object2.matrixWorld );
+
+			return _a.distanceToSquared( _b );
+
+		}
+
+		function filterAndFlatten( scene ) {
+
+			const result = [];
+
+			scene.traverse( function ( object ) {
+
+				if ( object.isCSS2DObject ) result.push( object );
+
+			} );
+
+			return result;
+
+		}
+
+		function zOrder( scene ) {
+
+			const sorted = filterAndFlatten( scene ).sort( function ( a, b ) {
+
+				if ( a.renderOrder !== b.renderOrder ) {
+
+					return b.renderOrder - a.renderOrder;
+
+				}
+
+				const distanceA = cache.objects.get( a ).distanceToCameraSquared;
+				const distanceB = cache.objects.get( b ).distanceToCameraSquared;
+
+				return distanceA - distanceB;
+
+			} );
+
+			const zMax = sorted.length;
+
+			for ( let i = 0, l = sorted.length; i < l; i ++ ) {
+
+				sorted[ i ].element.style.zIndex = zMax - i;
+
+			}
+
+		}
+
+	}
+
+}
+
 //SIDEBARMENU
 const sideBarText = document
   .getElementById("sidebar")
@@ -31617,10 +31820,12 @@ const geometry2 = new BoxGeometry(1, xSide, 1);
 const material = new MeshLambertMaterial({ color: 0x02be6e });
 const material2 = new MeshLambertMaterial({ color: 0xffff00 });
 const box = new Mesh(geometry, material);
+box.name ="Box 1";
 const box2 = new Mesh(geometry2, material2);
 box2.position.set(2, 0, 2);
-scene.add(box2);
+box2.name ="Box 2";
 scene.add(box);
+scene.add(box2);
 //Lights
 const directionalLightMain = new DirectionalLight();
 directionalLightMain.position.set(3, 2, 1);
@@ -31656,11 +31861,20 @@ const renderer = new WebGLRenderer({ canvas: canvas });
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 renderer.setClearColor(0xfafafa, 1);
+//Label renderer
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+labelRenderer.domElement.style.position = "absolute";
+labelRenderer.domElement.style.pointerEvents = "none";
+labelRenderer.domElement.style.top = "0";
+document.body.appendChild(labelRenderer.domElement);
+
 //Responsivity
 window.addEventListener("resize", () => {
   camera.aspect = canvas.clientWidth / canvas.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+  labelRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
 });
 //Raycaster
 const raycaster = new Raycaster();
@@ -31674,13 +31888,36 @@ window.addEventListener("click", (event) => {
   raycaster.setFromCamera(mouse, camera);
   let found = raycaster.intersectObjects(scene.children);
   found = found.filter((found) => found.object.type === "Mesh");
-  console.log(found[0]);
+  if (found.length === 1) {
+    console.log(found[0]);
+  }
 });
+//Label Objects
+window.addEventListener("dblclick", (event) => {
+  mouse.x =
+    ((event.clientX - container.offsetLeft) / container.clientWidth) * 2 - 1;
+  mouse.y =
+    -((event.clientY - container.offsetTop) / container.clientHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  let intersects = raycaster.intersectObjects(scene.children);
+  intersects = intersects.filter((found) => found.object.type === "Mesh");
+  if (!intersects.length) return;
+  const location = intersects[0].point;
+  const message = intersects[0].object.name;
+  const label = document.createElement("h4");
+  label.classList.add("label");
+  label.textContent = message;
+  const labelObject = new CSS2DObject(label);
+  labelObject.position.copy(location);
+  scene.add(labelObject);
+});
+
 //Animation
 function animate() {
   const delta = clock.getDelta();
   cameraControls.update(delta);
   renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
 animate();
