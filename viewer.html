@@ -17,28 +17,97 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Oswald:wght@300;400;700&family=Roboto:wght@100;300;400;500&display=swap"
-      rel="stylesheet"> 
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+      rel="stylesheet"
+    />
     <title>Ifc Viewer</title>
   </head>
   <body>
     <div class="box">
       <header class="header">
-        <a href="./index.html"><h1>IFC VIEWER</h1></a><h1 id="title">IFC VIEWER</h1>
+        <a href="./index.html"><h1>IFC VIEWER</h1></a>
+        <h1 id="title">IFC VIEWER</h1>
         <h1 id="title"></h1>
       </header>
       <div class="content">
         <div class="sidebar" id="sidebar">
-          <h5 id="menuOpen"><i class="ri-menu-line"></i></h5>
-          <h5 id="menuClose" ><i class="ri-menu-line"></i></h5>
-          <h5 id="axesButton"><i class="ri-menu-line"></i><span class="menuText">Axes</span></h5>
-          <h5 id="gridButton"><i class="ri-menu-line"></i><span class="menuText">Grid</span></h5>
-          <h5 id="wireframeButton"><i class="ri-menu-line"></i><span class="menuText">Wireframe</span></h5>
-          <h5 id="hiddenlineButton"><i class="ri-menu-line"></i><span class="menuText">Hidden line</span></h5>
-          <h5 id="shadedButton"><i class="ri-menu-line"></i><span class="menuText">Shaded</span></h5>
+          <div class="menuLine" id="menuOpen">
+            <svg
+              shape-rendering="geometricPrecision"
+              text-rendering="geometricPrecision"
+              image-rendering="optimizeQuality"
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              viewBox="0 0 512 389.24"
+            >
+              <path
+                fill-rule="nonzero"
+                d="M0 0h275.1v50.04H0V0zm361.79 115.14 54.44 54.44H0v50.04h416.2l-54.41 54.41 35.39 35.39L512 194.6v-.03l-35.39-35.36-79.43-79.46-35.39 35.39zM0 339.2h275.1v50.04H0V339.2z"
+              />
+            </svg>
+          </div>
+          <div class="menuLine" id="menuClose">
+            <svg
+              shape-rendering="geometricPrecision"
+              text-rendering="geometricPrecision"
+              image-rendering="optimizeQuality"
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              viewBox="0 0 512 389.24"
+            >
+              <path
+                fill-rule="nonzero"
+                d="M512 50.04H236.9V0H512v50.04zm-361.79 65.1-54.45 54.44H512v50.04H95.79l54.42 54.41-35.39 35.39L0 194.6v-.03l35.39-35.36 79.43-79.46 35.39 35.39zM512 389.24H236.9V339.2H512v50.04z"
+              />
+            </svg>
+          </div>
+          <div class="menuLine" id="axesButton">
+            <svg viewBox="0 0 122.88 118.96">
+              <path
+                d="M3.27,0H119.61a3.26,3.26,0,0,1,3.27,3.27V115.69a3.26,3.26,0,0,1-3.27,3.27H3.27A3.26,3.26,0,0,1,0,115.69V3.27A3.26,3.26,0,0,1,3.27,0ZM116.34,81.49H84.1v30.93h32.24V81.49Zm0-37.48H84.1V75h32.24V44ZM84.1,6.54V37.47h32.24V6.54ZM77.56,81.49H45.32v30.93H77.56V81.49Zm0-37.48H45.32V75H77.56V44ZM45.32,6.54V37.47H77.56V6.54ZM38.78,81.49H6.54v30.93H38.78V81.49Zm0-37.48H6.54V75H38.78V44Zm0-37.47H6.54V37.47H38.78V6.54Z"
+              />
+            </svg>
+            <span class="menuText">Axes</span>
+          </div>
+          <div class="menuLine" id="gridButton">
+            <svg viewBox="0 0 122.88 118.96">
+              <path
+                d="M3.27,0H119.61a3.26,3.26,0,0,1,3.27,3.27V115.69a3.26,3.26,0,0,1-3.27,3.27H3.27A3.26,3.26,0,0,1,0,115.69V3.27A3.26,3.26,0,0,1,3.27,0ZM116.34,81.49H84.1v30.93h32.24V81.49Zm0-37.48H84.1V75h32.24V44ZM84.1,6.54V37.47h32.24V6.54ZM77.56,81.49H45.32v30.93H77.56V81.49Zm0-37.48H45.32V75H77.56V44ZM45.32,6.54V37.47H77.56V6.54ZM38.78,81.49H6.54v30.93H38.78V81.49Zm0-37.48H6.54V75H38.78V44Zm0-37.47H6.54V37.47H38.78V6.54Z"
+              />
+            </svg>
+            <span class="menuText">Grid</span>
+          </div>
+          <div class="menuLine" id="wireframeButton">
+            <svg viewBox="0 0 128 128">
+              <path "
+              d="M121.059,29.509L64.596,0L6.919,29.509V95.51L67.087,128l53.993-32.554V29.53L121.059,29.509z
+              M60.7,117.291L13.307,91.699V39.856L60.7,63.574V117.291z
+              M64.021,58.081L14.009,33.065L64.554,7.154l49.458,25.89L64.021,58.081z
+              M114.693,91.763l-47.606,28.785V63.659l47.606-23.803V91.763z"/>
+            </svg>
+            <span class="menuText">Wireframe</span>
+          </div>
+          <div class="menuLine" id="hiddenlineButton">
+            <svg viewBox="0 0 128 128">
+              <path "
+              d="M121.059,29.509L64.596,0L6.919,29.509V95.51L67.087,128l53.993-32.554V29.53L121.059,29.509z
+              M60.7,117.291L13.307,91.699V39.856L60.7,63.574V117.291z
+              M64.021,58.081L14.009,33.065L64.554,7.154l49.458,25.89L64.021,58.081z
+              M114.693,91.763l-47.606,28.785V63.659l47.606-23.803V91.763z"/>
+            </svg>
+            <span class="menuText">Hidden line</span>
+          </div>
+          <div class="menuLine" id="shadedButton">
+            <svg viewBox="0 0 128 128">
+              <path "
+              d="M121.059,29.509L64.596,0L6.919,29.509V95.51L67.087,128l53.993-32.554V29.53L121.059,29.509z
+              M60.7,117.291L13.307,91.699V39.856L60.7,63.574V117.291z
+              M64.021,58.081L14.009,33.065L64.554,7.154l49.458,25.89L64.021,58.081z
+              M114.693,91.763l-47.606,28.785V63.659l47.606-23.803V91.763z"/>
+            </svg>
+            <span class="menuText">Shaded</span>
+          </div>
         </div>
-        <canvas class="viewer" id="viewer-container">
-        </canvas>
+        <canvas class="viewer" id="viewer-container"> </canvas>
       </div>
     </div>
     <script src="./JS/bundle.js"></script>

@@ -69,7 +69,7 @@ h3 {
   border-radius: 2rem;
   padding: 0.15rem 0.8rem;
 }
-h4{
+h4 {
   font-family: "Oswald", sans-serif;
   font-size: 0.9rem;
   font-weight: 400;
@@ -86,11 +86,7 @@ h5 {
   height: 2rem;
   border-left: 4px solid transparent;
 }
-h5:hover{
-  background-color: var(--light);
-  cursor: pointer;
-  border-left: 4px solid var(--primary);
-}
+
 p {
   font-family: "Oswald", sans-serif;
   font-size: 0.8rem;
@@ -108,7 +104,7 @@ img {
   max-width: 100%;
   border-radius: 4px;
 }
-i{
+i {
   margin-right: 1rem;
 }
 header {
@@ -126,6 +122,28 @@ section {
   gap: var(--gap);
   padding-left: var(--gap);
   margin-top: 0.8rem;
+}
+svg {
+  width: 16px;
+  margin-right: 1rem;
+  opacity: 1;
+  visibility: visible;
+}
+.menuLine {
+  font-family: "Oswald", sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  padding: 0.5rem;
+  line-height: 100%;
+  background-color: #fff;
+  width: 100%;
+  height: 2rem;
+  border-left: 4px solid transparent;
+}
+.menuLine:hover {
+  background-color: var(--light);
+  cursor: pointer;
+  border-left: 4px solid var(--primary);
 }
 .card {
   background-color: white;
@@ -158,8 +176,8 @@ section {
   transition: width 0.3s ease;
   z-index: 1;
 }
-.menuText{
-  visibility: hidden; 
+.menuText {
+  visibility: hidden;
   opacity: 0;
   transition: opacity 0.6s ease;
 }
@@ -181,7 +199,7 @@ section {
   pointer-events: all;
 }
 .label:after {
-  content:'';
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
