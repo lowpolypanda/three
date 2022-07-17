@@ -108,10 +108,10 @@ const geometry2 = new BoxGeometry(1, xSide, 1);
 const material = new MeshLambertMaterial({ color: 0x02be6e });
 const material2 = new MeshLambertMaterial({ color: 0xffff00 });
 const box = new Mesh(geometry, material);
-box.name ="Box 1"
+box.name = "Box 1";
 const box2 = new Mesh(geometry2, material2);
 box2.position.set(2, 0, 2);
-box2.name ="Box 2"
+box2.name = "Box 2";
 scene.add(box);
 scene.add(box2);
 //Lights
@@ -168,38 +168,30 @@ window.addEventListener("resize", () => {
 const raycaster = new Raycaster();
 const mouse = new Vector2();
 const container = document.getElementById("viewer-container");
-window.addEventListener("click", (event) => {
-  mouse.x =
-    ((event.clientX - container.offsetLeft) / container.clientWidth) * 2 - 1;
-  mouse.y =
-    -((event.clientY - container.offsetTop) / container.clientHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  let found = raycaster.intersectObjects(scene.children);
-  found = found.filter((found) => found.object.type === "Mesh");
-  if (found.length === 1) {
-    console.log(found[0]);
+//Raycaster + Label Objects
+let drag = false;
+document.addEventListener("mousedown", () => (drag = false));
+document.addEventListener("mousemove", () => (drag = true));
+document.addEventListener("click", (event) => {
+  if (drag === false) {
+    mouse.x =
+      ((event.clientX - container.offsetLeft) / container.clientWidth) * 2 - 1;
+    mouse.y =
+      -((event.clientY - container.offsetTop) / container.clientHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    let intersects = raycaster.intersectObjects(scene.children);
+    intersects = intersects.filter((found) => found.object.type === "Mesh");
+    if (!intersects.length) return;
+    const location = intersects[0].point;
+    const message = intersects[0].object.name;
+    const label = document.createElement("h4");
+    label.classList.add("label");
+    label.textContent = message;
+    const labelObject = new CSS2DObject(label);
+    labelObject.position.copy(location);
+    scene.add(labelObject);
   }
 });
-//Label Objects
-window.addEventListener("dblclick", (event) => {
-  mouse.x =
-    ((event.clientX - container.offsetLeft) / container.clientWidth) * 2 - 1;
-  mouse.y =
-    -((event.clientY - container.offsetTop) / container.clientHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  let intersects = raycaster.intersectObjects(scene.children);
-  intersects = intersects.filter((found) => found.object.type === "Mesh");
-  if (!intersects.length) return;
-  const location = intersects[0].point;
-  const message = intersects[0].object.name;
-  const label = document.createElement("h4");
-  label.classList.add("label");
-  label.textContent = message;
-  const labelObject = new CSS2DObject(label);
-  labelObject.position.copy(location);
-  scene.add(labelObject);
-});
-
 //Animation
 function animate() {
   const delta = clock.getDelta();
