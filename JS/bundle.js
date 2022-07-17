@@ -31904,6 +31904,7 @@ document.addEventListener("click", (event) => {
     scene.add(labelObject);
   }
 });
+
 //Animation
 function animate() {
   const delta = clock.getDelta();
