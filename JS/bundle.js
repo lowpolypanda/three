@@ -31939,7 +31939,7 @@ function wireframeFunc() {
 const hiddenlineButton = document.getElementById("hiddenlineButton");
 hiddenlineButton.addEventListener("click", hiddenlineFunc);
 function hiddenlineFunc() {
-  const fillMaterial = new MeshLambertMaterial({
+  const fillMaterial = new MeshBasicMaterial({
     color: 0xffffff,
     polygonOffset: true,
     polygonOffsetFactor: 1,
